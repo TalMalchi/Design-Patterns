@@ -1,10 +1,11 @@
-all: main1
+all: main  reactor guard
 
 # client: client.o
 # 	g++ -o client client.o 
-
-main1: main1.o
-	g++ -o main1 main1.o -lpthread
+reactor: reactor.o
+	g++ -o reactor reactor.o
+main: main.o
+	g++ -o main main.o -lpthread
 
 singelton: singelton.o
 	g++ -o singelton singelton.o -lpthread
@@ -12,18 +13,21 @@ singelton: singelton.o
 guard: guard.o
 	g++ -o guard guard.o
 
+Reactor.o: Reactor.cpp Reactor.hpp
+	g++ -c  Reactor.cpp Reactor.hpp
+
 guard.o: guard.cpp 
 	g++ -c guard.cpp
 
 singelton.o: singelton.cpp
 	g++ -c singelton.cpp -lpthread
 
-main1.o: main1.cpp
-	g++ -c main1.cpp -lpthread 
+main.o: main.cpp Queue.hpp
+	g++ -c main.cpp Queue.hpp -lpthread 
 
 
-.PHONY: clean main1
+.PHONY: clean main
 
 
 clean:
-	rm -f *.o main1 singelton guard all
+	rm -f *.o main singelton guard all

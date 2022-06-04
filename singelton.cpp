@@ -9,12 +9,13 @@ using namespace std;
 
 class singleton {
 
-    private:
-        static singleton *instance;
-        static mutex mtx;
+    // /private:
+        
 
         
     public:
+    static singleton *instance;
+    static mutex mtx;
         singleton() {
 
         }
@@ -48,4 +49,6 @@ int main() {
     singleton *s = singleton::Instance();
     singleton::destroy();
     return 0;
+    
+    
 }
