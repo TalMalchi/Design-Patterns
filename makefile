@@ -1,10 +1,11 @@
 all: main  
 all1: singelton reactor guard
 
+
 # client: client.o
 # 	g++ -o client client.o 
-reactor: reactor.o
-	g++ -o reactor reactor.o -lpthread
+reactor: pollServer.o
+	g++ -o reactor pollServer.o -lpthread
 
 main: main.o
 	g++ -o main main.o -lpthread
@@ -15,8 +16,8 @@ singelton: singelton.o
 guard: guard.o
 	g++ -o guard guard.o
 
-reactor.o: Reactor.cpp Reactor.hpp
-	g++ -c  Reactor.cpp Reactor.hpp -lpthread
+pollServer.o: pollServer.cpp Reactor.hpp
+	g++ -c  pollServer.cpp Reactor.hpp -lpthread
 
 guard.o: guard.cpp 
 	g++ -c guard.cpp
@@ -32,4 +33,4 @@ main.o: main.cpp Queue.hpp
 
 
 clean:
-	rm -f *.o main singelton guard all all1
+	rm -f *.o main singelton guard all all1 reactor

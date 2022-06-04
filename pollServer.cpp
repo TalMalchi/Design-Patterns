@@ -15,6 +15,32 @@
 #include "Reactor.hpp"
 
 #define PORT "9034"   // Port we're listening on
+void *newReactor();
+
+// ReactorPtr create_reactor() {
+//     ReactorPtr reactor =(ReactorPtr)malloc(sizeof(Reactor));
+//     reactor->id = 0;
+//     reactor->callback = NULL;
+//     reactor->thread = 0;
+//     return reactor;
+// }
+// // this function is called by the reactor thread
+// void InstallHandler(ReactorPtr reactor, int file_num, void *(*callback)(void *)) {
+//     reactor->id = file_num;
+//     reactor->callback = callback;
+//     ReactorManagerPtr manager = (ReactorManagerPtr)malloc(sizeof(ReactorManager));
+//     manager->reactor_count = file_num;
+//     manager->reactorPointer = reactor;
+//     pthread_create(&reactor->thread, NULL, callback, reactor);
+// }
+
+// // This function is responsible for removing the handler from the reactor.
+// void removeHandler(ReactorPtr reactor, int file_num) {
+//     pthread_join(reactor->thread, NULL); // maybe change  it pthread join
+//     reactor->id = -1;
+//     reactor->callback = NULL;
+    
+// }
 struct pollfd *pfds;
 int listennum;
 char buf[1024];
@@ -104,10 +130,18 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
 
     (*fd_count)--;
 }
+
+// void* Reactor1(){
+//     Reactor* reactor1 = create_reactor();
+//     return reactor1;
+
+// }
 void *ThreadFunc(void *arg)
 {
-    ReactorManagerPtr p_reqests = &((ReactorManagerPtr)arg)[0];
-    int new_fd = p_reqests->reactor_count;
+    //ReactorManagerPtr p_reqests = &((ReactorManagerPtr)arg)[0];
+    //int new_fd = p_reqests->reactor_count;
+    int* temp = (int*)arg;
+    int new_fd = *temp;
     while (1)
     {
         int bytes = recv(new_fd, buf, sizeof(buf), 0);
@@ -201,44 +235,12 @@ int main(void)
                                 get_in_addr((struct sockaddr*)&remoteaddr),
                                 remoteIP, INET6_ADDRSTRLEN),
                             newfd);
-                            ReactorPtr reactor =(ReactorPtr)new Reactor();
-                            InstallHandler(reactor, newfd, &ThreadFunc);
+                            //create new reactor
+                            Reactor *reactor = (Reactor*)newReactor();
+                            reactor->InstallHandler(&newfd,&ThreadFunc );
+
                     }
-                } else {
-                    // If not the listener, we're just a regular client
-                    int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
-
-                    int sender_fd = pfds[i].fd;
-
-                    if (nbytes <= 0) {
-                        // Got error or connection closed by client
-                        if (nbytes == 0) {
-                            // Connection closed
-                            printf("pollserver: socket %d hung up\n", sender_fd);
-                        } else {
-                            perror("recv");
-                        }
-
-                        close(pfds[i].fd); // Bye!
-
-                        del_from_pfds(pfds, i, &fd_count);
-
-                    } else {
-                        // We got some good data from a client
-
-                        for(int j = 0; j < fd_count; j++) {
-                            // Send to everyone!
-                            int dest_fd = pfds[j].fd;
-
-                            // Except the listener and ourselves
-                            if (dest_fd != listener && dest_fd != sender_fd) {
-                                if (send(dest_fd, buf, nbytes, 0) == -1) {
-                                    perror("send");
-                                }
-                            }
-                        }
-                    }
-                } // END handle data from client
+                }  // END handle data from client
             } // END got ready-to-read from poll()
         } // END looping through file descriptors
     } // END for(;;)--and you thought it would never end!
