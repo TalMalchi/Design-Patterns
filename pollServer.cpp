@@ -13,7 +13,7 @@
 #include <netdb.h>
 #include <poll.h>
 #include "Reactor.hpp"
-
+using namespace std;
 #define PORT "9034"   // Port we're listening on
 void *newReactor();
 
@@ -44,7 +44,7 @@ void *newReactor();
 struct pollfd *pfds;
 int listennum;
 char buf[1024];
-int fd_count =0 ;
+int fd_count;
 // Get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -138,8 +138,7 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
 // }
 void *ThreadFunc(void *arg)
 {
-    //ReactorManagerPtr p_reqests = &((ReactorManagerPtr)arg)[0];
-    //int new_fd = p_reqests->reactor_count;
+
     int* temp = (int*)arg;
     int new_fd = *temp;
     while (1)
@@ -147,7 +146,7 @@ void *ThreadFunc(void *arg)
         int bytes = recv(new_fd, buf, sizeof(buf), 0);
         if (bytes <= 0)
         {
-            printf("pollserver: socket %d disconnected\n", new_fd);
+            cout<<" Client disconnected" << endl;
             close(new_fd);
             return NULL;
         }
@@ -155,8 +154,9 @@ void *ThreadFunc(void *arg)
         {
             for (int i = 0; i < fd_count + 1; i++)
             {
+                
                 int client_fd = pfds[i].fd;
-                // printf("fd_count: %d , client_fd: %d, listener: %d ,new_fd: %d ", fd_count, client_fd, listener, new_fd);
+        
                 if (client_fd != listennum && client_fd != new_fd)
                 {
                     send(client_fd, buf, bytes, 0);
@@ -165,13 +165,14 @@ void *ThreadFunc(void *arg)
             bzero(buf, 1024);
         }
     }
-    return NULL;
+    //return NULL;
 }
 
 // Main
 int main(void)
 {
-    int listener;     // Listening socket descriptor
+    cout<<"starting server.."<<endl;
+  
 
     int newfd;        // Newly accept()ed socket descriptor
     struct sockaddr_storage remoteaddr; // Client address
@@ -188,15 +189,15 @@ int main(void)
     pfds = (pollfd *)malloc(sizeof *pfds *fd_size);
 
     // Set up and get a listening socket
-    listener = get_listener_socket();
+    listennum = get_listener_socket();
 
-    if (listener == -1) {
+    if (listennum == -1) {
         fprintf(stderr, "error getting listening socket\n");
         exit(1);
     }
 
     // Add the listener to set
-    pfds[0].fd = listener;
+    pfds[0].fd = listennum;
     pfds[0].events = POLLIN; // Report ready to read on incoming connection
 
     fd_count = 1; // For the listener
@@ -216,11 +217,11 @@ int main(void)
             // Check if someone's ready to read
             if (pfds[i].revents & POLLIN) { // We got one!!
 
-                if (pfds[i].fd == listener) {
+                if (pfds[i].fd == listennum) {
                     // If listener is ready to read, handle new connection
 
                     addrlen = sizeof remoteaddr;
-                    newfd = accept(listener,
+                    newfd = accept(listennum,
                         (struct sockaddr *)&remoteaddr,
                         &addrlen);
 

@@ -1,32 +1,30 @@
-// #include <iostream>
-// #include "Reactor.hpp"
+#include <iostream>
+#include <string>
+#include <pthread.h>
+//
 
+class Reactor{
+    private:
+    int id;
+    void *(*callback)(void *);
+    pthread_t thread;
 
-// ReactorPtr create_reactor() {
-//     ReactorPtr reactor =(ReactorPtr)malloc(sizeof(Reactor));
-//     reactor->id = 0;
-//     reactor->callback = NULL;
-//     reactor->thread = 0;
-//     return reactor;
-// }
-// // this function is called by the reactor thread
-// void InstallHandler(ReactorPtr reactor, int file_num, void *(*callback)(void *)) {
-//     reactor->id = file_num;
-//     reactor->callback = callback;
-//     ReactorManagerPtr manager = (ReactorManagerPtr)malloc(sizeof(ReactorManager));
-//     manager->reactor_count = file_num;
-//     manager->reactorPointer = reactor;
-//     pthread_create(&reactor->thread, NULL, callback, reactor);
-// }
+    public:
+       Reactor()= default;
+       ~Reactor()= default; 
+       void InstallHandler(int *file_num, void *(*callback)(void *)){
+           this->id=*file_num;
+            this->callback=callback;
+            pthread_create(&(this->thread), NULL, callback, (void*)file_num);
 
-// // This function is responsible for removing the handler from the reactor.
-// void removeHandler(ReactorPtr reactor, int file_num) {
-//     pthread_join(reactor->thread, NULL); // maybe change  it pthread join
-//     reactor->id = -1;
-//     reactor->callback = NULL;
-    
-// }
-
-// // int main(){
-// //     return 0;
-// // }
+       }
+        void removeHandler(Reactor *reactor, int file_num){
+            reactor->id=-1;
+            reactor->callback= NULL;
+            pthread_join(reactor->thread,NULL);
+        }
+        friend void* newReactor() {
+        Reactor *new_one = new Reactor();
+        return new_one;
+    }
+};
