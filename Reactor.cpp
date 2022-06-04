@@ -26,3 +26,7 @@ void removeHandler(ReactorPtr reactor, int file_num) {
     reactor->callback = NULL;
     
 }
+
+int main(){
+    return 0;
+}

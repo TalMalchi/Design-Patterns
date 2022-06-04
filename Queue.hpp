@@ -6,6 +6,7 @@ using namespace std;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 // declaring mutex
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t lk = PTHREAD_MUTEX_INITIALIZER;
 
 struct node
 {
@@ -27,13 +28,16 @@ public:
     int sockfd;
     Queue *createQ()
     {
+        Queue *q=new Queue();
+        return q;
+    }
+
+    Queue() {
         head = NULL;
         pthread_mutex_init(&lock, NULL);
         pthread_cond_init(&cond, NULL);
         cout << "inside init queue" << endl;
     }
-
-    Queue() {}
     void destroyQ()
     {
         node *temp;
@@ -46,6 +50,27 @@ public:
         pthread_mutex_destroy(&lock);
         pthread_cond_destroy(&cond);
     }
+    void* deQ() // add the qeueue
+    {
+        //pthread_mutex_t lk = PTHREAD_MUTEX_INITIALIZER;
+        //pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
+        cout << "inside deQ" << endl;
+        pthread_mutex_lock(&lock);
+        cout << "after mutex lock" << endl;
+        while (head == NULL)
+        {
+            cout << "inside deQ, before cond wait" << endl;
+            pthread_cond_wait(&(cond), &(lock));
+        }
+        cout << "after while" << endl;
+        void *data = head->data;
+        cout << "data:: " << data << endl;
+        node *temp = head;
+        head = head->next;
+        delete temp;
+        pthread_mutex_unlock(&(lock));
+        return data;
+    };
     // enqueue function to add data to the queue get data, queue, and sockfd
     void enQ(void *data, Queue *q)
     {
@@ -71,26 +96,5 @@ public:
         cout << "after enQ" << endl;
     }
 
-    void *deQ(Queue* q) // add the qeueue
-    {
-        cout << "inside deQ" << endl;
-        //lock the queue
-        cout<<"data:: "<< q->head->data << endl;
-        pthread_mutex_lock(&(q->lock));
-        
-        cout << "after mutex lock" << endl;
-        while (q->head == NULL)
-        {
-            cout << "inside deQ, before cond wait" << endl;
-            pthread_cond_wait(&(q->cond), &(q->lock));
-        }
-        cout << "after while" << endl;
-        void *data = q->head->data;
-        cout << "data:: " << data << endl;
-        node *temp = q->head;
-        q->head = q->head->next;
-        delete temp;
-        pthread_mutex_unlock(&(q->lock));
-        return data;
-    }
+    
 };

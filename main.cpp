@@ -81,15 +81,15 @@ public:
     {
         cout << "inside run" << endl;
         // create active object
-        active_object *obj = new active_object();
-        // active_object *obj = (active_object*)arg;
-        *obj = *(active_object *)arg;
+        //active_object *obj = new active_object();
+        active_object *obj = (active_object*)arg;
+        //*obj = *(active_object *)arg;
         void *data;
         while (1)
         {
             cout << "inside while" << endl;
             // data= obj->q->deQ(obj->q);
-            data = obj->q->deQ(obj->q);
+            data = obj->q->deQ();
 
             void *now_routine = obj->start_routine(data);
             void *ans = obj->end_rountine(now_routine);
@@ -117,11 +117,14 @@ void *input_func1(char *temp)
 }
 void *output_func1(void *temp)
 {
+    cout << "inside output_func1" << endl;
     q2->enQ(temp, q2);
     return temp;
 }
 void *output_func2(void *temp)
 {
+    cout << "inside output_func2" << endl;
+    
     q3->enQ(temp, q3);
     return temp;
 }
