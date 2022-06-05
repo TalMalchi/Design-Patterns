@@ -36,3 +36,11 @@ For question 5 run from terminal `./singelton`
 For question 6 run from first terminal `./reactor`, and from second terminal run `./clientR`   
 
 In order to clean all the files you need to run `make clean`
+
+A video which shows how to run the Active Object part:
+
+
+
+https://user-images.githubusercontent.com/87694635/172058989-cbbf432b-621f-4c41-a745-9bd7a8dc9107.mp4
+
+
