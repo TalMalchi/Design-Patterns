@@ -122,8 +122,12 @@ void *ThreadFunc(void *arg)
             close(new_fd);
             return NULL;
         }
+        //print the message
+        
         else
         {
+            buf[bytes] = '\0';
+            cout<<"Received: "<<buf<<endl;
             for (int i = 0; i < fd_count + 1; i++)
             {
                 

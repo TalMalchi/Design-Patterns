@@ -21,6 +21,7 @@ class singleton
         }
 
     public:
+    //create new instance (singelton), and return the pointer to it
         static singleton *Instance( T *ptr )
         {
             if( instance == NULL )
@@ -53,14 +54,15 @@ class singleton
 
 
 };
+//init the instance to NULL
 template <typename T> singleton<T> *singleton<T>::instance = NULL;
 
 int main(){
-    ///create file descriptor with singleton
+    ///create file descriptor with singleton for checking
     FILE *fp ;
-    singleton<FILE> *s = singleton<FILE>::Instance( fp );
-    singleton<FILE> *s1 = singleton<FILE>::Instance( fp );
-    cout << s << endl;
-    cout << s1 << endl;
+    singleton<FILE> *check = singleton<FILE>::Instance( fp );
+    singleton<FILE> *check1 = singleton<FILE>::Instance( fp );
+    cout << check << endl;
+    cout << check1 << endl;
     return 0;
 }

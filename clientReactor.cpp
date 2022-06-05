@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <iostream>
+
 using namespace std;
+
 #define PORT 9034
 int connected = 0;
 int sockett = -1;
@@ -39,23 +41,25 @@ void *recvFunction(void *arg)
 
 void *sendFunction(void *arg)
 {
-    char input[1024] = {0};
+    string input;
     while (connected != 0)
     {
 
-        cin>>input;
+        getline(cin, input);
         cout<<"Cilent input: "<<input<<endl;
-        if (strncmp(input,"EXIT",4) == 0)
+        //comperes the input with the exit command
+        if (!strcmp(input.c_str(), "EXIT"))
         {
-            send(sockett,"EXIT",4,0);
             connected = 0;
             break;
         }
-        if (send(sockett, input, strlen(input) + 1, 0) == -1)
+       
+        if (send(sockett, input.c_str(), input.size() + 1, 0) == -1)
         {
             perror("send");
         }
-        bzero(input, 1024);
+    //put zero into the input string
+        input.clear();
     }
     return NULL;
 }
