@@ -5,7 +5,11 @@ In this  assigmment our main goal was to implement different types of design pat
 
 * Singelton -  The singleton pattern is a software design pattern that restricts the instantiation of a class to one "single" instance. This is useful when exactly one object is needed to coordinate actions across the system.
 
-* Active Object - The active object design pattern decouples method execution from method invocation for objects that each reside in their own thread of control. The goal is to introduce concurrency, by using asynchronous method invocation and a scheduler for handling requests.
+* Active Object - The active object design pattern decouples method execution from method invocation for objects that each reside in their own thread of control. The goal is to introduce concurrency, by using asynchronous method invocation and a scheduler for handling requests.  
+We ask to create a pipeline of 3 active object. Each active Object will change the data of the message we got from client, and pass it to the next on.  
+ao- will change tha data by caeser chiper, add the new word to Q2 - the queue of ao2.  
+a02- will change upper case letters to lowers, and the opposite, add the new word to Q3- the queue of ao3.  
+ao3- will just return the data, and send the new work back to the client.  
 
 * Guard -  a guard is a boolean expression that must evaluate to true if the program execution is to continue in the branch in question.
 
