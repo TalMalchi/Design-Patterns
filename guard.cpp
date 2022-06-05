@@ -32,6 +32,11 @@ public:
     }
 };
 
+
+
+/* Its not reccommaned to use this guard to protect strtok, Beacuse this gurad save just the last string
+that has been read, and it may return incorrect string in case of multithreading */
+
 int main(){
     return 0;
     

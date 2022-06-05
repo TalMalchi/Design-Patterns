@@ -41,8 +41,6 @@ public:
     active_object()
     {
         cout << "inside init active object" << endl;
-        // q=new Queue();
-        // q->createQ();
         pthread_mutex_init(&lock, NULL);
         pthread_cond_init(&cond, NULL);
     }
@@ -53,6 +51,9 @@ public:
         pthread_mutex_destroy(&lock);
         pthread_cond_destroy(&cond);
     }
+
+    /* init new Active Object. Each active object has its own queue of tasks,
+    and its own thread, that is responsible for executing the tasks. */
 
     active_object *newAO(Queue *q, void *(*start_routine)(void *), void *(*end_rountine)(void *))
     {
@@ -77,18 +78,15 @@ public:
         pthread_mutex_unlock(&lock);
         delete ao;
     };
+    /* This function will run the thread of the active object, and will executr thw task in its own queue */
     static void *runThread(void *arg)
     {
         cout << "inside run" << endl;
-        // create active object
-        //active_object *obj = new active_object();
-        active_object *obj = (active_object*)arg;
-        //*obj = *(active_object *)arg;
+        active_object *obj = (active_object *)arg;
         void *data;
         while (1)
         {
             cout << "inside while" << endl;
-            // data= obj->q->deQ(obj->q);
             data = obj->q->deQ();
 
             void *now_routine = obj->start_routine(data);
@@ -97,43 +95,38 @@ public:
     }
 };
 
-/* ------------------Creata Pipeline -------------------------*/
-typedef struct pipeline
-{
-    active_object *func1;
-    active_object *func2;
-    active_object *func3;
-    // active_object *func4;
-} pipeline;
 
 /* ------------------Server -------------------------*/
 
-// this function push the msg from the client to the queue
+// enQ the message from the client to Q1- the queue of active object 1
 void *input_func1(char *temp)
 {
     cout << "inside input_func1" << endl;
     q1->enQ(temp, q1);
     return temp;
 }
+//enQ the new word to Q2- the queue of active object 2
 void *output_func1(void *temp)
 {
     cout << "inside output_func1" << endl;
     q2->enQ(temp, q2);
     return temp;
 }
+//enQ the new word to Q3- the queue of active object 3
 void *output_func2(void *temp)
 {
     cout << "inside output_func2" << endl;
-    
+
     q3->enQ(temp, q3);
     return temp;
 }
+//send the new data to the client
 void *output_func3(void *temp)
 {
     cout << "inside output_func3" << endl;
-    //send temp back to the client 
+    // send temp back to the client
     char *tempp = (char *)temp;
-    int sockfd= q3->sockfd;/////////@@@@ check where im saving the sock number of the client 
+    int sockfd = q3->sockfd; /////////@@@@ check where im saving the sock number of the client
     int check = send(sockfd, tempp, 2048, 0);
     if (check == -1)
     {
@@ -141,8 +134,8 @@ void *output_func3(void *temp)
         exit(1);
     }
     return temp;
-    }
-
+}
+// Caesar cipher for the message
 void *func1(void *data)
 {
     cout << "inside func1" << endl;
@@ -177,8 +170,10 @@ void *func2(void *data)
     }
     return (void *)ans;
 }
-void* func3(void *data){
-    cout<<"inside func3"<<endl;
+//return the new data
+void *func3(void *data)
+{
+    cout << "inside func3" << endl;
     return data;
 }
 
@@ -209,10 +204,7 @@ void *get_in_addr(struct sockaddr *sa)
 void *get_function(void *ptr)
 {
 
-    // int sockfd= malloc(sizeof(((int*)ptr)));
     int sockfd = *((int *)ptr);
-    // revc message from top of the queue
-
     char recv_msg[1024];
     char *data;
     while (1)
@@ -227,13 +219,11 @@ void *get_function(void *ptr)
         printf("Received: %s\n", recv_msg);
         data = recv_msg;
         cout << "data is " << data << endl;
-        // push the data to the queue
+        // enQ the data to the queue
         input_func1(data);
     }
-
-    // enqueue the message to the bottom of the queueu
 }
-// Caesar cipher
+
 
 int create_server(void)
 {
@@ -336,7 +326,7 @@ int create_server(void)
 int main()
 {
 
-    // create the queue
+    // create the queue for each active object
     q1->createQ();
     cout << "after cerate queue1" << endl;
     q2->createQ();
@@ -344,10 +334,14 @@ int main()
     q3->createQ();
     cout << "after cerate queue3" << endl;
 
-    // create the active object
+    /*  -------------------pipeline of active object-----------------------------
+     Each active Object will change the data of the client, and pass it to the next on.
+    ao- will change tha data by caeser chiper, add the new word to Q2 - the queue of ao2.
+    a02- will change upper case letters to lowers, and the opposite, add the new word to Q3- the queue of ao3.
+    ao3- will just return the data, and send the new work back to the client.   */
+
     active_object *ao = new active_object();
     active_object *ao2 = new active_object();
-    ;
     active_object *ao3 = new active_object();
     cout << "after create active object" << endl;
     ao->newAO(q1, func1, output_func1);
@@ -356,17 +350,7 @@ int main()
     cout << "after create ao2" << endl;
     ao3->newAO(q3, func3, output_func3);
     cout << "after create ao3" << endl;
-
-    // ao->q = q1;
-    // ao2->q = q2;
-    // ao3->q = q3;
-
-    // /crete pipeline
-    pipeline *p = new pipeline();
-    p->func1 = ao;
-    p->func2 = ao2;
-    p->func3 = ao3;
     cout << "finish init" << endl;
-    // create the server
+    // run the server
     create_server();
 }

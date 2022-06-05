@@ -17,30 +17,6 @@ using namespace std;
 #define PORT "9034"   // Port we're listening on
 void *newReactor();
 
-// ReactorPtr create_reactor() {
-//     ReactorPtr reactor =(ReactorPtr)malloc(sizeof(Reactor));
-//     reactor->id = 0;
-//     reactor->callback = NULL;
-//     reactor->thread = 0;
-//     return reactor;
-// }
-// // this function is called by the reactor thread
-// void InstallHandler(ReactorPtr reactor, int file_num, void *(*callback)(void *)) {
-//     reactor->id = file_num;
-//     reactor->callback = callback;
-//     ReactorManagerPtr manager = (ReactorManagerPtr)malloc(sizeof(ReactorManager));
-//     manager->reactor_count = file_num;
-//     manager->reactorPointer = reactor;
-//     pthread_create(&reactor->thread, NULL, callback, reactor);
-// }
-
-// // This function is responsible for removing the handler from the reactor.
-// void removeHandler(ReactorPtr reactor, int file_num) {
-//     pthread_join(reactor->thread, NULL); // maybe change  it pthread join
-//     reactor->id = -1;
-//     reactor->callback = NULL;
-    
-// }
 struct pollfd *pfds;
 int listennum;
 char buf[1024];
@@ -131,11 +107,6 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
     (*fd_count)--;
 }
 
-// void* Reactor1(){
-//     Reactor* reactor1 = create_reactor();
-//     return reactor1;
-
-// }
 void *ThreadFunc(void *arg)
 {
 
@@ -143,6 +114,7 @@ void *ThreadFunc(void *arg)
     int new_fd = *temp;
     while (1)
     {
+        //receive message from client
         int bytes = recv(new_fd, buf, sizeof(buf), 0);
         if (bytes <= 0)
         {
@@ -236,7 +208,7 @@ int main(void)
                                 get_in_addr((struct sockaddr*)&remoteaddr),
                                 remoteIP, INET6_ADDRSTRLEN),
                             newfd);
-                            //create new reactor
+                            /*create that will handle the client, with THreadFunc */
                             Reactor *reactor = (Reactor*)newReactor();
                             reactor->InstallHandler(&newfd,&ThreadFunc );
 
