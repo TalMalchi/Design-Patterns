@@ -29,10 +29,10 @@ but after a good research we manage to complete this task.
 
 # How to Run
 
-In aim to compile all the file you need to write in your terminal `make all`.
-For questions 1-3 run from first terminal `./main1`, and from second terminal run `./client 127.0.0.1` 
-For question 4 run from terminal `./guard`
-For question 5 run from terminal `./singelton`
-For question 6 run from first terminal `./reactor`, and from second terminal run `./clientR` 
+In aim to compile all the file you need to write in your terminal `make all`.  
+For questions 1-3 run from first terminal `./main1`, and from second terminal run `./client 127.0.0.1`   
+For question 4 run from terminal `./guard`  
+For question 5 run from terminal `./singelton`  
+For question 6 run from first terminal `./reactor`, and from second terminal run `./clientR`   
 
 In order to clean all the files you need to run `make clean`
