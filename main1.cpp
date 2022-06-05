@@ -19,9 +19,9 @@
 
 #define BACKLOG 10 // how many pending connections queue will hold
 
-Queue *q1 = new Queue();
-Queue *q2 = new Queue();
-Queue *q3 = new Queue();
+Queue *q1;
+Queue *q2;
+Queue *q3;
 
 /* ------------------Active Object Class -------------------------*/
 
@@ -31,8 +31,6 @@ class active_object
 public:
     Queue *q;
     pthread_t *thread;
-    pthread_mutex_t lock;
-    pthread_cond_t cond;
     void *(*start_routine)(void *);
     void *(*end_rountine)(void *);
     void *(*runThread1)(void *);
@@ -40,16 +38,17 @@ public:
 
     active_object()
     {
-        cout << "inside init active object" << endl;
-        pthread_mutex_init(&lock, NULL);
-        pthread_cond_init(&cond, NULL);
+        q = new Queue();
+        thread = new pthread_t;
+        start_routine = NULL;
+        end_rountine = NULL;
+        runThread1 = NULL;
+        new_fd = -1;
     }
 
     ~active_object()
     {
         delete q;
-        pthread_mutex_destroy(&lock);
-        pthread_cond_destroy(&cond);
     }
 
     /* init new Active Object. Each active object has its own queue of tasks,
@@ -57,123 +56,131 @@ public:
 
     active_object *newAO(Queue *q, void *(*start_routine)(void *), void *(*end_rountine)(void *))
     {
-        active_object *ao = new active_object();
-        ao->q = q;
-        ao->start_routine = start_routine;
-        ao->end_rountine = end_rountine;
-        ao->new_fd = new_fd;
-        ao->thread = new pthread_t;
-        // send to run function
-        cout << "before create thread" << endl;
-        pthread_create((ao->thread), NULL, runThread, &ao);
-
-        return ao;
+        this->q = q;
+        this->start_routine = start_routine;
+        this->end_rountine = end_rountine;
+        this->new_fd = -1;
+        this->thread = new pthread_t;
+        pthread_create(this->thread, NULL, this->runThread, this);
+        return this;
     };
 
     // destroy active object
     void destroyAO(active_object *ao)
     {
-        pthread_mutex_lock(&lock);
         pthread_cancel(*ao->thread);
-        pthread_mutex_unlock(&lock);
         delete ao;
     };
+
     /* This function will run the thread of the active object, and will executr thw task in its own queue */
     static void *runThread(void *arg)
     {
-        cout << "inside run" << endl;
+        // cout << "inside run" << endl;
         active_object *obj = (active_object *)arg;
-        void *data;
         while (1)
         {
-            cout << "inside while" << endl;
-            data = obj->q->deQ();
-
-            void *now_routine = obj->start_routine(data);
+            void *now_routine = obj->start_routine(obj->q->deQ());
             void *ans = obj->end_rountine(now_routine);
         }
     }
 };
 
-
 /* ------------------Server -------------------------*/
 
 // enQ the message from the client to Q1- the queue of active object 1
-void *input_func1(char *temp)
+void *input_func1(node *temp)
 {
-    cout << "inside input_func1" << endl;
-    q1->enQ(temp, q1);
+    q1->enQ(temp);
     return temp;
 }
-//enQ the new word to Q2- the queue of active object 2
+// enQ the new word to Q2- the queue of active object 2
 void *output_func1(void *temp)
 {
-    cout << "inside output_func1" << endl;
-    q2->enQ(temp, q2);
+    q2->enQ(temp);
     return temp;
 }
-//enQ the new word to Q3- the queue of active object 3
+// enQ the new word to Q3- the queue of active object 3
 void *output_func2(void *temp)
 {
-    cout << "inside output_func2" << endl;
-
-    q3->enQ(temp, q3);
+    q3->enQ(temp);
     return temp;
 }
-//send the new data to the client
+// send the new data to the client
 void *output_func3(void *temp)
 {
-    cout << "inside output_func3" << endl;
+    node *temp1 = (node *)temp;
     // send temp back to the client
-    char *tempp = (char *)temp;
-    int sockfd = q3->sockfd; /////////@@@@ check where im saving the sock number of the client
-    int check = send(sockfd, tempp, 2048, 0);
-    if (check == -1)
+    if (strlen((char *)temp1->data) != 0)
     {
-        perror("send");
-        exit(1);
+        int check = send(temp1->sockfd, temp1->data, strlen((char *)temp1->data), 0);
+        if (check == -1)
+        {
+            perror("sockfd error");
+            exit(1);
+        }
+        printf("Send back %s\n", (char *)(temp1->data));
     }
+
     return temp;
 }
+
 // Caesar cipher for the message
 void *func1(void *data)
 {
-    cout << "inside func1" << endl;
-    char *ans = "";
-    char *data1 = (char *)data;
+    node *temp = (node *)data;
+
+    char *data1 = (char *)temp->data;
     for (int i = 0; i < strlen(data1); i++)
     {
         if (data1[i] >= 'a' && data1[i] <= 'z')
         {
-            ans += (data1[i] - 96) % 26 + 97;
+            if (data1[i] == 'z')
+            {
+                data1[i] = 'a';
+            }
+            else
+            {
+                data1[i] = data1[i] + 1;
+            }
         }
-        else if (data1[i] >= 'A' && data1[i] <= 'Z')
+        else
         {
-            ans += (data1[i] - 64) % 26 + 65;
+            if (data1[i] == 'Z')
+            {
+                data1[i] = 'A';
+            }
+            else
+            {
+                data1[i] = data1[i] + 1;
+            }
         }
     }
-    return (void *)ans;
+    temp->data = data1;
+    return temp;
 }
 
 // change upper case to lower case
 void *func2(void *data)
 {
-    cout << "inside func2" << endl;
-    char *ans = "";
-    char *data1 = (char *)data;
+    node *temp = (node *)data;
+    char *data1 = (char *)temp->data;
     for (int i = 0; i < strlen(data1); i++)
     {
         if (data1[i] >= 'a' && data1[i] <= 'z')
         {
-            ans += (data1[i] - 32);
+            data1[i] -= 32;
+        }
+        else
+        {
+            data1[i] += 32;
         }
     }
-    return (void *)ans;
+    temp->data = data1;
+    return temp;
 }
-//return the new data
+// return the new data
 void *func3(void *data)
 {
-    cout << "inside func3" << endl;
     return data;
 }
 
@@ -209,6 +216,7 @@ void *get_function(void *ptr)
     char *data;
     while (1)
     {
+
         memset(recv_msg, '\0', sizeof(recv_msg));
         int recv_len = recv(sockfd, recv_msg, sizeof(recv_msg), 0);
         if (recv_len == -1)
@@ -216,14 +224,22 @@ void *get_function(void *ptr)
             perror("recv");
             exit(1);
         }
-        printf("Received: %s\n", recv_msg);
-        data = recv_msg;
-        cout << "data is " << data << endl;
-        // enQ the data to the queue
-        input_func1(data);
+        if (recv_len != 0)
+        {
+
+            printf("Received: %s\n", recv_msg);
+            data = recv_msg;
+            node *temp = new node;
+            temp->data = new char[strlen(data) + 1];
+            strcpy((char *)temp->data, data);
+            temp->sockfd = sockfd;
+            temp->next = NULL;
+
+            // enQ the data to the queue
+            input_func1(temp);
+        }
     }
 }
-
 
 int create_server(void)
 {
@@ -316,7 +332,7 @@ int create_server(void)
                   s, sizeof s);
         printf("server: got connection from %s\n", s);
 
-        // Each Client connect to the Server woth new thread
+        // Each Client connect to the Server with new thread
         pthread_t thread;
         pthread_create(&thread, NULL, get_function, (void *)&new_fd);
     }
@@ -327,12 +343,9 @@ int main()
 {
 
     // create the queue for each active object
-    q1->createQ();
-    cout << "after cerate queue1" << endl;
-    q2->createQ();
-    cout << "after cerate queue2" << endl;
-    q3->createQ();
-    cout << "after cerate queue3" << endl;
+    q1 = q1->createQ();
+    q2 = q2->createQ();
+    q3 = q3->createQ();
 
     /*  -------------------pipeline of active object-----------------------------
      Each active Object will change the data of the client, and pass it to the next on.
@@ -343,13 +356,9 @@ int main()
     active_object *ao = new active_object();
     active_object *ao2 = new active_object();
     active_object *ao3 = new active_object();
-    cout << "after create active object" << endl;
-    ao->newAO(q1, func1, output_func1);
-    cout << "after create ao" << endl;
-    ao2->newAO(q2, func2, output_func2);
-    cout << "after create ao2" << endl;
-    ao3->newAO(q3, func3, output_func3);
-    cout << "after create ao3" << endl;
+    ao = ao->newAO(q1, func1, output_func1);
+    ao2 = ao2->newAO(q2, func2, output_func2);
+    ao3 = ao3->newAO(q3, func3, output_func3);
     cout << "finish init" << endl;
     // run the server
     create_server();

@@ -16,8 +16,11 @@ using namespace std;
 int connected = 0;
 int sockett = -1;
 
+
+//this function is used to recieve data to the server
 void *recvFunction(void *arg)
 {
+    
     char buff[1024] = {0};
     connected = 1;
     int bytes = 0;
@@ -28,7 +31,7 @@ void *recvFunction(void *arg)
             connected = 0;
             break;
         }
-        cout<< "Received: " << buff << endl;
+        cout<< "Received from Server: " << buff << endl;
         if (!strcmp(buff, "EXIT"))
         {
             connected = 0;
@@ -39,6 +42,7 @@ void *recvFunction(void *arg)
     return NULL;
 }
 
+//this function is used to send data to the server
 void *sendFunction(void *arg)
 {
     string input;
@@ -58,7 +62,6 @@ void *sendFunction(void *arg)
         {
             perror("send");
         }
-    //put zero into the input string
         input.clear();
     }
     return NULL;

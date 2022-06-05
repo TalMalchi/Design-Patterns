@@ -95,9 +95,8 @@ int main(int argc, char *argv[])
             cout << "Could not send to server! Whoops!\r\n";
             continue;
         }
-        // server response, we get the TOP data of the stack
-        try
-        {
+        // server response
+        
             memset(buffer, 0, 1024);
             cout << "Try to recieve TOP_MSG from server" << endl;
             if ((numbytes = recv(sockfd, buffer, sizeof(buffer), 0)) == -1)
@@ -106,13 +105,10 @@ int main(int argc, char *argv[])
                 perror("recv");
                 exit(1);
             }
-            printf("Server: TOP_MSG: '%s'\n", buffer);
+            printf("Server: '%s'\n", buffer);
             printf("OUTPUT: '%s'\n", buffer);
-        }
-        catch (exception &e)
-        {
-            cout << "exception: didnt recieve msg" << endl;
-        }
+        
+        
     } while (true);
     printf("client: received '%s'\n", buf);
     close(sockfd);

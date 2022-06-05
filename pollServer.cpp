@@ -122,26 +122,17 @@ void *ThreadFunc(void *arg)
             close(new_fd);
             return NULL;
         }
-        //print the message
         
         else
         {
             buf[bytes] = '\0';
-            cout<<"Received: "<<buf<<endl;
-            for (int i = 0; i < fd_count + 1; i++)
-            {
-                
-                int client_fd = pfds[i].fd;
-        
-                if (client_fd != listennum && client_fd != new_fd)
-                {
-                    send(client_fd, buf, bytes, 0);
-                }
-            }
+            cout<<"Received from client: "<<buf<<endl;
+            string input;
+            getline(cin,input);
+            send(new_fd, input.c_str(), input.size() + 1, 0);
             bzero(buf, 1024);
         }
     }
-    //return NULL;
 }
 
 // Main

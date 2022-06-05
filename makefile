@@ -1,4 +1,4 @@
-all: main1 client  singelton reactor guard clientR
+all: main1 client singelton reactor guard clientR
  
 
 
