@@ -21,23 +21,26 @@ int sockett = -1;
 void *recvFunction(void *arg)
 {
     
-    char buff[1024] = {0};
+    char buff[1024];
     connected = 1;
     int bytes = 0;
-    while ((bytes = recv(sockett, buff, 1024, 0)) != -1)
+    while (1)
     {
+        bytes = recv(sockett, buff, sizeof(buff), 0);
+        //cout << "Received from Server: " << buff << endl;
         if (!bytes)
         {
             connected = 0;
             break;
         }
-        cout<< "Received from Server: " << buff << endl;
+          
         if (!strcmp(buff, "EXIT"))
         {
             connected = 0;
             break;
         }
         bzero(buff, 1024);
+    
     }
     return NULL;
 }

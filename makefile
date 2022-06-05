@@ -20,8 +20,8 @@ singelton: singelton.o
 guard: guard.o
 	g++ -o guard guard.o
 
-pollServer.o: pollServer.cpp Reactor.hpp
-	g++ -c  pollServer.cpp Reactor.hpp -lpthread
+pollServer.o: pollServer.cpp reactor.hpp
+	g++ -c  pollServer.cpp reactor.hpp -lpthread
 
 clientReactor.o: clientReactor.cpp 
 	g++ -c  clientReactor.cpp 

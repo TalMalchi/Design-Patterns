@@ -33,7 +33,6 @@ public:
     pthread_t *thread;
     void *(*start_routine)(void *);
     void *(*end_rountine)(void *);
-    void *(*runThread1)(void *);
     int new_fd;
 
     active_object()
@@ -42,7 +41,6 @@ public:
         thread = new pthread_t;
         start_routine = NULL;
         end_rountine = NULL;
-        runThread1 = NULL;
         new_fd = -1;
     }
 

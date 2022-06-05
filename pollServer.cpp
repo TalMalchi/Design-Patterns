@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <poll.h>
-#include "Reactor.hpp"
+#include "reactor.hpp"
 using namespace std;
 #define PORT "9034"   // Port we're listening on
 void *newReactor();
@@ -125,12 +125,22 @@ void *ThreadFunc(void *arg)
         
         else
         {
-            buf[bytes] = '\0';
+            //buf[bytes] = '\0';
             cout<<"Received from client: "<<buf<<endl;
-            string input;
-            getline(cin,input);
-            send(new_fd, input.c_str(), input.size() + 1, 0);
-            bzero(buf, 1024);
+            //string input;
+            //getline(cin,input);
+            //send(new_fd, input.c_str(), input.size() + 1, 0);
+            int check= send(new_fd, buf, 2048, 0);
+            if (check == -1)
+            {
+                cout<<"Error sending message"<<endl;
+            }
+            else
+            {
+                bzero(buf, 1024);
+            }
+
+            
         }
     }
 }
